@@ -1,0 +1,373 @@
+@use '../styles/mixins' as *;
+
+.container {
+  width: 100%;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 $spacing-xl 0;
+}
+
+.section {
+  margin-bottom: $spacing-xl;
+}
+
+.strategyCard {
+  margin-bottom: $spacing-lg;
+}
+
+.strategySelector {
+  display: flex;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+
+  @include mobile {
+    flex-direction: column;
+  }
+}
+
+.strategyOption {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg;
+  border: 2px solid var(--border-color);
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-secondary);
+  flex: 1;
+  min-width: 200px;
+
+  &:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-tertiary);
+  }
+
+  &.active {
+    border-color: var(--primary-color);
+    background: var(--primary-bg);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.strategyRadio {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .strategyOption.active & {
+    border-color: var(--primary-color);
+
+    &::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: var(--primary-color);
+      border-radius: 50%;
+    }
+  }
+}
+
+.strategyInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.strategyName {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.strategyDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.rulesList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.ruleItem {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-lg;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary-color);
+  }
+
+  @include mobile {
+    flex-direction: column;
+  }
+}
+
+.ruleDragHandle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--text-tertiary);
+  cursor: grab;
+  flex-shrink: 0;
+  font-size: 16px;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.ruleContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.ruleHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.ruleIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 $spacing-xs;
+  background: var(--primary-color);
+  color: white;
+  border-radius: $radius-sm;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ruleModels {
+  font-weight: 500;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.ruleDefault {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.ruleDetails {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.ruleOrder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  align-items: center;
+}
+
+.ruleOrderLabel {
+  font-weight: 500;
+  margin-right: $spacing-xs;
+}
+
+.rulePattern {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: var(--bg-tertiary);
+  border-radius: $radius-sm;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.ruleArrow {
+  color: var(--text-tertiary);
+  margin: 0 2px;
+}
+
+.ruleFallback {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.ruleFallbackIcon {
+  font-size: 14px;
+
+  &.enabled {
+    color: var(--success-color);
+  }
+
+  &.disabled {
+    color: var(--text-tertiary);
+  }
+}
+
+.ruleActions {
+  display: flex;
+  gap: $spacing-xs;
+  flex-shrink: 0;
+
+  @include mobile {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.formLabel {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.formHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.tagInput {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  padding: $spacing-sm;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-md;
+  min-height: 42px;
+  cursor: text;
+
+  &:focus-within {
+    border-color: var(--primary-color);
+  }
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--primary-bg);
+  border: 1px solid var(--primary-color);
+  border-radius: $radius-sm;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.tagRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+
+  &:hover {
+    color: var(--danger-color);
+  }
+}
+
+.tagInputField {
+  flex: 1;
+  min-width: 100px;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-primary);
+  padding: 4px;
+
+  &::placeholder {
+    color: var(--text-tertiary);
+  }
+}
+
+.fallbackToggle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+
+    .toggleKnob {
+      transform: translateX(20px);
+    }
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggleLabel {
+  font-size: 14px;
+  color: var(--text-primary);
+}
