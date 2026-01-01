@@ -29,3 +29,6 @@ settings.local.json
 *.njsproj
 *.sln
 *.sw?
+priority-auth-selection.md
+auth-binding-selector.md
+api-key-rate-limits.md
