@@ -3,9 +3,11 @@ import type {
   RoutingConfig,
   RoutingStrategyResponse,
   RoutingPriorityResponse,
+  RoutingBindingsResponse,
   RoutingMutationResponse,
   RoutingStrategy,
   PriorityRule,
+  AuthBinding,
 } from '@/types';
 
 const BASE_PATH = '/routing';
@@ -49,5 +51,30 @@ export const routingApi = {
 
   deletePriorityRule: (index: number): Promise<RoutingMutationResponse> => {
     return apiClient.delete<RoutingMutationResponse>(`${BASE_PATH}/priority/${index}`);
+  },
+
+  // Auth Bindings API
+  getBindings: (): Promise<RoutingBindingsResponse> => {
+    return apiClient.get<RoutingBindingsResponse>(`${BASE_PATH}/bindings`);
+  },
+
+  updateBindings: (bindings: AuthBinding[]): Promise<RoutingMutationResponse> => {
+    return apiClient.put<RoutingMutationResponse>(`${BASE_PATH}/bindings`, { bindings });
+  },
+
+  addBinding: (binding: AuthBinding): Promise<RoutingMutationResponse> => {
+    return apiClient.post<RoutingMutationResponse>(`${BASE_PATH}/bindings`, binding);
+  },
+
+  getBinding: (index: number): Promise<AuthBinding> => {
+    return apiClient.get<AuthBinding>(`${BASE_PATH}/bindings/${index}`);
+  },
+
+  updateBinding: (index: number, binding: AuthBinding): Promise<RoutingMutationResponse> => {
+    return apiClient.put<RoutingMutationResponse>(`${BASE_PATH}/bindings/${index}`, binding);
+  },
+
+  deleteBinding: (index: number): Promise<RoutingMutationResponse> => {
+    return apiClient.delete<RoutingMutationResponse>(`${BASE_PATH}/bindings/${index}`);
   },
 };

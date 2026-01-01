@@ -2,12 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuthStore, useNotificationStore } from '@/stores';
 import { routingApi } from '@/services/api';
-import type { RoutingStrategy, PriorityRule } from '@/types';
+import type { RoutingStrategy, PriorityRule, AuthBinding } from '@/types';
 import styles from './RoutingPage.module.scss';
 
 interface RuleFormData {
@@ -22,6 +23,18 @@ const emptyRuleForm: RuleFormData = {
   fallback: true,
 };
 
+interface BindingFormData {
+  apiKey: string;
+  authIds: string[];
+  fallback: boolean;
+}
+
+const emptyBindingForm: BindingFormData = {
+  apiKey: '',
+  authIds: [],
+  fallback: true,
+};
+
 export function RoutingPage() {
   const { t } = useTranslation();
   const { showNotification } = useNotificationStore();
@@ -29,6 +42,7 @@ export function RoutingPage() {
 
   const [strategy, setStrategy] = useState<RoutingStrategy>('round-robin');
   const [rules, setRules] = useState<PriorityRule[]>([]);
+  const [bindings, setBindings] = useState<AuthBinding[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -39,6 +53,12 @@ export function RoutingPage() {
   const [modelInput, setModelInput] = useState('');
   const [orderInput, setOrderInput] = useState('');
 
+  // Binding modal state
+  const [bindingModalOpen, setBindingModalOpen] = useState(false);
+  const [editingBindingIndex, setEditingBindingIndex] = useState<number | null>(null);
+  const [bindingFormData, setBindingFormData] = useState<BindingFormData>(emptyBindingForm);
+  const [authIdInput, setAuthIdInput] = useState('');
+
   const disableControls = connectionStatus !== 'connected';
 
   const loadRouting = useCallback(async () => {
@@ -48,6 +68,7 @@ export function RoutingPage() {
       const config = await routingApi.getConfig();
       setStrategy(config.strategy || 'round-robin');
       setRules(config.priority || []);
+      setBindings(config.bindings || []);
     } catch (err: any) {
       setError(err?.message || t('notification.refresh_failed'));
     } finally {
@@ -184,6 +205,110 @@ export function RoutingPage() {
     }
   };
 
+  // Auth Binding handlers
+  const openAddBindingModal = () => {
+    setEditingBindingIndex(null);
+    setBindingFormData(emptyBindingForm);
+    setAuthIdInput('');
+    setBindingModalOpen(true);
+  };
+
+  const openEditBindingModal = (index: number) => {
+    const binding = bindings[index];
+    setEditingBindingIndex(index);
+    setBindingFormData({
+      apiKey: binding['api-key'] || '',
+      authIds: binding['auth-ids'] || [],
+      fallback: binding.fallback !== false,
+    });
+    setAuthIdInput('');
+    setBindingModalOpen(true);
+  };
+
+  const closeBindingModal = () => {
+    setBindingModalOpen(false);
+    setBindingFormData(emptyBindingForm);
+    setEditingBindingIndex(null);
+  };
+
+  const handleAddAuthId = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+
+    if (!bindingFormData.authIds.includes(trimmed)) {
+      setBindingFormData((prev) => ({
+        ...prev,
+        authIds: [...prev.authIds, trimmed],
+      }));
+    }
+    setAuthIdInput('');
+  };
+
+  const handleRemoveAuthId = (index: number) => {
+    setBindingFormData((prev) => ({
+      ...prev,
+      authIds: prev.authIds.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleAuthIdKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      handleAddAuthId(authIdInput);
+    }
+  };
+
+  const handleSaveBinding = async () => {
+    if (!bindingFormData.apiKey.trim()) {
+      showNotification(t('routing.binding_api_key_required'), 'error');
+      return;
+    }
+    if (bindingFormData.authIds.length === 0) {
+      showNotification(t('routing.binding_auth_ids_required'), 'error');
+      return;
+    }
+
+    const binding: AuthBinding = {
+      'api-key': bindingFormData.apiKey.trim(),
+      'auth-ids': bindingFormData.authIds,
+      fallback: bindingFormData.fallback,
+    };
+
+    setSaving(true);
+    try {
+      if (editingBindingIndex !== null) {
+        await routingApi.updateBinding(editingBindingIndex, binding);
+        const nextBindings = bindings.map((b, i) => (i === editingBindingIndex ? binding : b));
+        setBindings(nextBindings);
+        showNotification(t('routing.binding_updated'), 'success');
+      } else {
+        await routingApi.addBinding(binding);
+        setBindings([...bindings, binding]);
+        showNotification(t('routing.binding_added'), 'success');
+      }
+      closeBindingModal();
+    } catch (err: any) {
+      showNotification(`${t('notification.update_failed')}: ${err?.message || ''}`, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteBinding = async (index: number) => {
+    if (!window.confirm(t('routing.binding_delete_confirm'))) return;
+
+    setSaving(true);
+    try {
+      await routingApi.deleteBinding(index);
+      setBindings(bindings.filter((_, i) => i !== index));
+      showNotification(t('routing.binding_deleted'), 'success');
+    } catch (err: any) {
+      showNotification(`${t('notification.delete_failed')}: ${err?.message || ''}`, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const strategyOptions: { value: RoutingStrategy; name: string; desc: string }[] = [
     {
       value: 'round-robin',
@@ -204,6 +329,14 @@ export function RoutingPage() {
       </Button>
       <Button size="sm" onClick={openAddModal} disabled={disableControls}>
         {t('routing.add_rule')}
+      </Button>
+    </div>
+  );
+
+  const bindingActionButtons = (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <Button size="sm" onClick={openAddBindingModal} disabled={disableControls}>
+        {t('routing.add_binding')}
       </Button>
     </div>
   );
@@ -312,6 +445,75 @@ export function RoutingPage() {
               </div>
             )}
           </Card>
+
+          <Card title={t('routing.bindings_title')} extra={bindingActionButtons}>
+            {bindings.length === 0 ? (
+              <EmptyState
+                title={t('routing.bindings_empty_title')}
+                description={t('routing.bindings_empty_desc')}
+                action={
+                  <Button onClick={openAddBindingModal} disabled={disableControls}>
+                    {t('routing.add_binding')}
+                  </Button>
+                }
+              />
+            ) : (
+              <div className={styles.rulesList}>
+                {bindings.map((binding, index) => (
+                  <div key={index} className={styles.ruleItem}>
+                    <div className={styles.ruleDragHandle}>&#x2630;</div>
+                    <div className={styles.ruleContent}>
+                      <div className={styles.ruleHeader}>
+                        <span className={styles.ruleIndex}>{index + 1}</span>
+                        <span className={styles.ruleModels}>
+                          {binding['api-key']}
+                        </span>
+                      </div>
+                      <div className={styles.ruleDetails}>
+                        <div className={styles.ruleOrder}>
+                          <span className={styles.ruleOrderLabel}>
+                            {t('routing.auth_ids')}:
+                          </span>
+                          {binding['auth-ids'].map((id, i) => (
+                            <span key={i}>
+                              {i > 0 && <span className={styles.ruleArrow}>,</span>}
+                              <span className={styles.rulePattern}>{id}</span>
+                            </span>
+                          ))}
+                        </div>
+                        <div className={styles.ruleFallback}>
+                          <span
+                            className={`${styles.ruleFallbackIcon} ${binding.fallback !== false ? styles.enabled : styles.disabled}`}
+                          >
+                            {binding.fallback !== false ? '✓' : '✗'}
+                          </span>
+                          <span>{t('routing.fallback')}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.ruleActions}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => openEditBindingModal(index)}
+                        disabled={disableControls}
+                      >
+                        {t('common.edit')}
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDeleteBinding(index)}
+                        disabled={disableControls || saving}
+                      >
+                        {t('common.delete')}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
         </>
       )}
 
@@ -404,6 +606,83 @@ export function RoutingPage() {
               <span className={styles.toggleLabel}>{t('routing.fallback_label')}</span>
             </div>
             <div className={styles.formHint}>{t('routing.fallback_hint')}</div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={bindingModalOpen}
+        onClose={closeBindingModal}
+        title={
+          editingBindingIndex !== null
+            ? t('routing.edit_binding_title')
+            : t('routing.add_binding_title')
+        }
+        footer={
+          <>
+            <Button variant="secondary" onClick={closeBindingModal} disabled={saving}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleSaveBinding} loading={saving}>
+              {editingBindingIndex !== null ? t('common.update') : t('common.add')}
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.modalForm}>
+          <div className={styles.formGroup}>
+            <Input
+              label={t('routing.binding_api_key_label')}
+              placeholder={t('routing.binding_api_key_placeholder')}
+              value={bindingFormData.apiKey}
+              onChange={(e) =>
+                setBindingFormData((prev) => ({ ...prev, apiKey: e.target.value }))
+              }
+            />
+            <div className={styles.formHint}>{t('routing.binding_api_key_hint')}</div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>{t('routing.binding_auth_ids_label')}</label>
+            <div className={styles.formHint}>{t('routing.binding_auth_ids_hint')}</div>
+            <div className={styles.tagInput}>
+              {bindingFormData.authIds.map((id, i) => (
+                <span key={i} className={styles.tag}>
+                  {id}
+                  <button
+                    type="button"
+                    className={styles.tagRemove}
+                    onClick={() => handleRemoveAuthId(i)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                className={styles.tagInputField}
+                placeholder={t('routing.binding_auth_ids_placeholder')}
+                value={authIdInput}
+                onChange={(e) => setAuthIdInput(e.target.value)}
+                onKeyDown={handleAuthIdKeyDown}
+                onBlur={() => handleAddAuthId(authIdInput)}
+              />
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <div className={styles.fallbackToggle}>
+              <div
+                className={`${styles.toggle} ${bindingFormData.fallback ? styles.active : ''}`}
+                onClick={() =>
+                  setBindingFormData((prev) => ({ ...prev, fallback: !prev.fallback }))
+                }
+              >
+                <div className={styles.toggleKnob} />
+              </div>
+              <span className={styles.toggleLabel}>{t('routing.binding_fallback_label')}</span>
+            </div>
+            <div className={styles.formHint}>{t('routing.binding_fallback_hint')}</div>
           </div>
         </div>
       </Modal>
