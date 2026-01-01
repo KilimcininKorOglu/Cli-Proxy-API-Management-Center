@@ -324,3 +324,12 @@ export function IconRoute({ size = 20, ...props }: IconProps) {
     </svg>
   );
 }
+
+export function IconGauge({ size = 20, ...props }: IconProps) {
+  return (
+    <svg {...baseSvgProps} width={size} height={size} {...props}>
+      <path d="m12 14 4-4" />
+      <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+    </svg>
+  );
+}

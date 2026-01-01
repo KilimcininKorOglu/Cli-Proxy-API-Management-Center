@@ -14,3 +14,4 @@ export * from './usage';
 export * from './log';
 export * from './quota';
 export * from './routing';
+export * from './rateLimits';
