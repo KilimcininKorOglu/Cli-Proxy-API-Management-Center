@@ -31,7 +31,11 @@ export function LoginPage() {
   const [error, setError] = useState('');
 
   const detectedBase = useMemo(() => detectApiBaseFromLocation(), []);
-  const nextLanguageLabel = language === 'zh-CN' ? t('language.english') : t('language.chinese');
+  const nextLanguageLabel = useMemo(() => {
+    const labels: Record<string, string> = { 'zh-CN': 'en', en: 'tr', tr: 'zh-CN' };
+    const next = labels[language] || 'en';
+    return t(`language.${next === 'zh-CN' ? 'chinese' : next === 'tr' ? 'turkish' : 'english'}`);
+  }, [language, t]);
 
   useEffect(() => {
     const init = async () => {

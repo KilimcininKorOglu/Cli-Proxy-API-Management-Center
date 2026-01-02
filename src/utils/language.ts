@@ -5,11 +5,11 @@ const parseStoredLanguage = (value: string): Language | null => {
   try {
     const parsed = JSON.parse(value);
     const candidate = parsed?.state?.language ?? parsed?.language ?? parsed;
-    if (candidate === 'zh-CN' || candidate === 'en') {
+    if (candidate === 'zh-CN' || candidate === 'en' || candidate === 'tr') {
       return candidate;
     }
   } catch {
-    if (value === 'zh-CN' || value === 'en') {
+    if (value === 'zh-CN' || value === 'en' || value === 'tr') {
       return value;
     }
   }
@@ -36,7 +36,10 @@ const getBrowserLanguage = (): Language => {
     return 'zh-CN';
   }
   const raw = navigator.languages?.[0] || navigator.language || 'zh-CN';
-  return raw.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en';
+  const lower = raw.toLowerCase();
+  if (lower.startsWith('zh')) return 'zh-CN';
+  if (lower.startsWith('tr')) return 'tr';
+  return 'en';
 };
 
 export const getInitialLanguage = (): Language => getStoredLanguage() ?? getBrowserLanguage();
