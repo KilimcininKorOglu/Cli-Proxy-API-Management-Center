@@ -1465,6 +1465,33 @@ export function QuotaPage() {
     }
   }, [claudeCodeFiles, loading, claudeCodeQuota, loadClaudeCodeQuota]);
 
+  // Auto-load Antigravity quota when files are available
+  useEffect(() => {
+    if (loading || antigravityFiles.length === 0) return;
+    const needsLoading = antigravityFiles.some((file) => !antigravityQuota[file.name]);
+    if (needsLoading) {
+      loadAntigravityQuota(antigravityFiles);
+    }
+  }, [antigravityFiles, loading, antigravityQuota, loadAntigravityQuota]);
+
+  // Auto-load Codex quota when files are available
+  useEffect(() => {
+    if (loading || codexFiles.length === 0) return;
+    const needsLoading = codexFiles.some((file) => !codexQuota[file.name]);
+    if (needsLoading) {
+      loadCodexQuota(codexFiles);
+    }
+  }, [codexFiles, loading, codexQuota, loadCodexQuota]);
+
+  // Auto-load Gemini CLI quota when files are available
+  useEffect(() => {
+    if (loading || geminiCliFiles.length === 0) return;
+    const needsLoading = geminiCliFiles.some((file) => !geminiCliQuota[file.name]);
+    if (needsLoading) {
+      loadGeminiCliQuota(geminiCliFiles);
+    }
+  }, [geminiCliFiles, loading, geminiCliQuota, loadGeminiCliQuota]);
+
   // Resolve type label text for badges.
   const getTypeLabel = (type: string): string => {
     const key = `auth_files.filter_${type}`;
