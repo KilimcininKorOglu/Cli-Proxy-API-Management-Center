@@ -327,7 +327,12 @@ export function AuthFilesPage() {
         (item.type || '').toString().toLowerCase().includes(term) ||
         (item.provider || '').toString().toLowerCase().includes(term);
       return matchType && matchSearch;
-    });
+    })
+      .sort((a, b) => {
+        const typeA = (a.type || a.provider || '').toString().toLowerCase();
+        const typeB = (b.type || b.provider || '').toString().toLowerCase();
+        return typeA.localeCompare(typeB);
+      });
   }, [files, filter, search]);
 
   // 统计信息
