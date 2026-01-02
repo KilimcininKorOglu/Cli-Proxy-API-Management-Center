@@ -131,12 +131,7 @@ export function OAuthPage() {
 
   const startAuth = async (provider: OAuthProvider) => {
     const projectId = provider === 'gemini-cli' ? (states[provider]?.projectId || '').trim() : undefined;
-    if (provider === 'gemini-cli' && !projectId) {
-      const message = t('auth_login.gemini_cli_project_id_required');
-      updateProviderState(provider, { projectIdError: message });
-      showNotification(message, 'warning');
-      return;
-    }
+    // Project ID is now optional. If not provided, the first available project will be selected automatically.
     if (provider === 'gemini-cli') {
       updateProviderState(provider, { projectIdError: undefined });
     }
@@ -151,7 +146,7 @@ export function OAuthPage() {
     try {
       const res = await oauthApi.startAuth(
         provider,
-        provider === 'gemini-cli' ? { projectId: projectId! } : undefined
+        provider === 'gemini-cli' ? { projectId: projectId || undefined } : undefined
       );
       updateProviderState(provider, { url: res.url, state: res.state, status: 'waiting', polling: true });
       if (res.state) {
