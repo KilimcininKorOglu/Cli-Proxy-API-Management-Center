@@ -1934,6 +1934,42 @@ export function QuotaPage() {
       </Card>
 
       <Card
+        title={t('claude_code_quota.title')}
+        extra={
+          <div className={styles.headerActions}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => loadClaudeCodeQuota(claudeCodeFiles, true)}
+              disabled={disableControls || claudeCodeLoading || claudeCodeFiles.length === 0}
+              loading={claudeCodeLoading}
+            >
+              {t('claude_code_quota.fetch_all')}
+            </Button>
+          </div>
+        }
+      >
+        {claudeCodeFiles.length === 0 ? (
+          <EmptyState
+            title={t('claude_code_quota.empty_title')}
+            description={t('claude_code_quota.empty_desc')}
+          />
+        ) : (
+          <>
+            <div className={styles.antigravityControls}>
+              <div className={styles.antigravityControl}>
+                <label>{t('common.info')}</label>
+                <div className={styles.statsInfo}>
+                  {claudeCodeFiles.length} {t('auth_files.files_count')}
+                </div>
+              </div>
+            </div>
+            <div className={styles.antigravityGrid}>{claudeCodeFiles.map(renderClaudeCodeCard)}</div>
+          </>
+        )}
+      </Card>
+
+      <Card
         title={t('codex_quota.title')}
         extra={
           <div className={styles.headerActions}>
@@ -1998,41 +2034,6 @@ export function QuotaPage() {
               </div>
             </div>
             <div className={styles.geminiCliGrid}>{geminiCliFiles.map(renderGeminiCliCard)}</div>
-          </>
-        )}
-      </Card>
-      <Card
-        title={t('claude_code_quota.title')}
-        extra={
-          <div className={styles.headerActions}>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => loadClaudeCodeQuota(claudeCodeFiles, true)}
-              disabled={disableControls || claudeCodeLoading || claudeCodeFiles.length === 0}
-              loading={claudeCodeLoading}
-            >
-              {t('claude_code_quota.fetch_all')}
-            </Button>
-          </div>
-        }
-      >
-        {claudeCodeFiles.length === 0 ? (
-          <EmptyState
-            title={t('claude_code_quota.empty_title')}
-            description={t('claude_code_quota.empty_desc')}
-          />
-        ) : (
-          <>
-            <div className={styles.antigravityControls}>
-              <div className={styles.antigravityControl}>
-                <label>{t('common.info')}</label>
-                <div className={styles.statsInfo}>
-                  {claudeCodeFiles.length} {t('auth_files.files_count')}
-                </div>
-              </div>
-            </div>
-            <div className={styles.antigravityGrid}>{claudeCodeFiles.map(renderClaudeCodeCard)}</div>
           </>
         )}
       </Card>
