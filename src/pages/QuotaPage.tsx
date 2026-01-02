@@ -813,28 +813,10 @@ export function QuotaPage() {
   const [files, setFiles] = useState<AuthFileItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [antigravityPage, setAntigravityPage] = useState(1);
-  const [antigravityPageSize, setAntigravityPageSize] = useState(6);
-  const [codexPage, setCodexPage] = useState(1);
-  const [codexPageSize, setCodexPageSize] = useState(6);
-  const [geminiCliPage, setGeminiCliPage] = useState(1);
-  const [geminiCliPageSize, setGeminiCliPageSize] = useState(6);
-  const [claudeCodePage, setClaudeCodePage] = useState(1);
-  const [claudeCodePageSize, setClaudeCodePageSize] = useState(6);
   const [antigravityLoading, setAntigravityLoading] = useState(false);
-  const [antigravityLoadingScope, setAntigravityLoadingScope] = useState<
-    'page' | 'all' | null
-  >(null);
   const [codexLoading, setCodexLoading] = useState(false);
-  const [codexLoadingScope, setCodexLoadingScope] = useState<'page' | 'all' | null>(null);
   const [geminiCliLoading, setGeminiCliLoading] = useState(false);
-  const [geminiCliLoadingScope, setGeminiCliLoadingScope] = useState<
-    'page' | 'all' | null
-  >(null);
   const [claudeCodeLoading, setClaudeCodeLoading] = useState(false);
-  const [claudeCodeLoadingScope, setClaudeCodeLoadingScope] = useState<
-    'page' | 'all' | null
-  >(null);
 
   const antigravityQuota = useQuotaStore((state) => state.antigravityQuota);
   const setAntigravityQuota = useQuotaStore((state) => state.setAntigravityQuota);
@@ -874,43 +856,15 @@ export function QuotaPage() {
     () => files.filter((file) => isAntigravityFile(file)),
     [files]
   );
-  const antigravityTotalPages = Math.max(
-    1,
-    Math.ceil(antigravityFiles.length / antigravityPageSize)
-  );
-  const antigravityCurrentPage = Math.min(antigravityPage, antigravityTotalPages);
-  const antigravityStart = (antigravityCurrentPage - 1) * antigravityPageSize;
-  const antigravityPageItems = antigravityFiles.slice(
-    antigravityStart,
-    antigravityStart + antigravityPageSize
-  );
 
   const codexFiles = useMemo(() => files.filter((file) => isCodexFile(file)), [files]);
-  const codexTotalPages = Math.max(1, Math.ceil(codexFiles.length / codexPageSize));
-  const codexCurrentPage = Math.min(codexPage, codexTotalPages);
-  const codexStart = (codexCurrentPage - 1) * codexPageSize;
-  const codexPageItems = codexFiles.slice(codexStart, codexStart + codexPageSize);
 
   const geminiCliFiles = useMemo(
     () => files.filter((file) => isGeminiCliFile(file) && !isRuntimeOnlyAuthFile(file)),
     [files]
   );
-  const geminiCliTotalPages = Math.max(1, Math.ceil(geminiCliFiles.length / geminiCliPageSize));
-  const geminiCliCurrentPage = Math.min(geminiCliPage, geminiCliTotalPages);
-  const geminiCliStart = (geminiCliCurrentPage - 1) * geminiCliPageSize;
-  const geminiCliPageItems = geminiCliFiles.slice(
-    geminiCliStart,
-    geminiCliStart + geminiCliPageSize
-  );
 
   const claudeCodeFiles = useMemo(() => files.filter((file) => isClaudeCodeFile(file)), [files]);
-  const claudeCodeTotalPages = Math.max(1, Math.ceil(claudeCodeFiles.length / claudeCodePageSize));
-  const claudeCodeCurrentPage = Math.min(claudeCodePage, claudeCodeTotalPages);
-  const claudeCodeStart = (claudeCodeCurrentPage - 1) * claudeCodePageSize;
-  const claudeCodePageItems = claudeCodeFiles.slice(
-    claudeCodeStart,
-    claudeCodeStart + claudeCodePageSize
-  );
 
   const fetchAntigravityQuota = useCallback(
     async (authIndex: string): Promise<AntigravityQuotaGroup[]> => {
@@ -975,12 +929,11 @@ export function QuotaPage() {
   );
 
   const loadAntigravityQuota = useCallback(
-    async (targets: AuthFileItem[], scope: 'page' | 'all') => {
+    async (targets: AuthFileItem[]) => {
       if (antigravityLoadingRef.current) return;
       antigravityLoadingRef.current = true;
       const requestId = ++antigravityRequestIdRef.current;
       setAntigravityLoading(true);
-      setAntigravityLoadingScope(scope);
 
       try {
         if (targets.length === 0) return;
@@ -1040,7 +993,6 @@ export function QuotaPage() {
       } finally {
         if (requestId === antigravityRequestIdRef.current) {
           setAntigravityLoading(false);
-          setAntigravityLoadingScope(null);
           antigravityLoadingRef.current = false;
         }
       }
@@ -1149,12 +1101,11 @@ export function QuotaPage() {
   );
 
   const loadCodexQuota = useCallback(
-    async (targets: AuthFileItem[], scope: 'page' | 'all') => {
+    async (targets: AuthFileItem[]) => {
       if (codexLoadingRef.current) return;
       codexLoadingRef.current = true;
       const requestId = ++codexRequestIdRef.current;
       setCodexLoading(true);
-      setCodexLoadingScope(scope);
 
       try {
         if (targets.length === 0) return;
@@ -1205,7 +1156,6 @@ export function QuotaPage() {
       } finally {
         if (requestId === codexRequestIdRef.current) {
           setCodexLoading(false);
-          setCodexLoadingScope(null);
           codexLoadingRef.current = false;
         }
       }
@@ -1277,12 +1227,11 @@ export function QuotaPage() {
   );
 
   const loadGeminiCliQuota = useCallback(
-    async (targets: AuthFileItem[], scope: 'page' | 'all') => {
+    async (targets: AuthFileItem[]) => {
       if (geminiCliLoadingRef.current) return;
       geminiCliLoadingRef.current = true;
       const requestId = ++geminiCliRequestIdRef.current;
       setGeminiCliLoading(true);
-      setGeminiCliLoadingScope(scope);
 
       try {
         if (targets.length === 0) return;
@@ -1332,7 +1281,6 @@ export function QuotaPage() {
       } finally {
         if (requestId === geminiCliRequestIdRef.current) {
           setGeminiCliLoading(false);
-          setGeminiCliLoadingScope(null);
           geminiCliLoadingRef.current = false;
         }
       }
@@ -1361,12 +1309,11 @@ export function QuotaPage() {
   );
 
   const loadClaudeCodeQuota = useCallback(
-    async (targets: AuthFileItem[], scope: 'page' | 'all', refresh: boolean = false) => {
+    async (targets: AuthFileItem[], refresh: boolean = false) => {
       if (claudeCodeLoadingRef.current) return;
       claudeCodeLoadingRef.current = true;
       const requestId = ++claudeCodeRequestIdRef.current;
       setClaudeCodeLoading(true);
-      setClaudeCodeLoadingScope(scope);
 
       try {
         if (targets.length === 0) return;
@@ -1424,7 +1371,6 @@ export function QuotaPage() {
       } finally {
         if (requestId === claudeCodeRequestIdRef.current) {
           setClaudeCodeLoading(false);
-          setClaudeCodeLoadingScope(null);
           claudeCodeLoadingRef.current = false;
         }
       }
@@ -1515,7 +1461,7 @@ export function QuotaPage() {
     // Only load if we don't have cached data for these files
     const needsLoading = claudeCodeFiles.some((file) => !claudeCodeQuota[file.name]);
     if (needsLoading) {
-      loadClaudeCodeQuota(claudeCodeFiles, 'all', false);
+      loadClaudeCodeQuota(claudeCodeFiles, false);
     }
   }, [claudeCodeFiles, loading, claudeCodeQuota, loadClaudeCodeQuota]);
 
@@ -1956,18 +1902,9 @@ export function QuotaPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => loadAntigravityQuota(antigravityPageItems, 'page')}
-              disabled={disableControls || antigravityLoading || antigravityPageItems.length === 0}
-              loading={antigravityLoading && antigravityLoadingScope === 'page'}
-            >
-              {t('antigravity_quota.refresh_button')}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => loadAntigravityQuota(antigravityFiles, 'all')}
+              onClick={() => loadAntigravityQuota(antigravityFiles)}
               disabled={disableControls || antigravityLoading || antigravityFiles.length === 0}
-              loading={antigravityLoading && antigravityLoadingScope === 'all'}
+              loading={antigravityLoading}
             >
               {t('antigravity_quota.fetch_all')}
             </Button>
@@ -1983,23 +1920,6 @@ export function QuotaPage() {
           <>
             <div className={styles.antigravityControls}>
               <div className={styles.antigravityControl}>
-                <label>{t('auth_files.page_size_label')}</label>
-                <select
-                  className={styles.pageSizeSelect}
-                  value={antigravityPageSize}
-                  onChange={(e) => {
-                    setAntigravityPageSize(Number(e.target.value) || 6);
-                    setAntigravityPage(1);
-                  }}
-                >
-                  <option value={6}>6</option>
-                  <option value={9}>9</option>
-                  <option value={12}>12</option>
-                  <option value={18}>18</option>
-                  <option value={24}>24</option>
-                </select>
-              </div>
-              <div className={styles.antigravityControl}>
                 <label>{t('common.info')}</label>
                 <div className={styles.statsInfo}>
                   {antigravityFiles.length} {t('auth_files.files_count')}
@@ -2007,37 +1927,8 @@ export function QuotaPage() {
               </div>
             </div>
             <div className={styles.antigravityGrid}>
-              {antigravityPageItems.map(renderAntigravityCard)}
+              {antigravityFiles.map(renderAntigravityCard)}
             </div>
-            {antigravityFiles.length > antigravityPageSize && (
-              <div className={styles.pagination}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setAntigravityPage(Math.max(1, antigravityCurrentPage - 1))}
-                  disabled={antigravityCurrentPage <= 1}
-                >
-                  {t('auth_files.pagination_prev')}
-                </Button>
-                <div className={styles.pageInfo}>
-                  {t('auth_files.pagination_info', {
-                    current: antigravityCurrentPage,
-                    total: antigravityTotalPages,
-                    count: antigravityFiles.length
-                  })}
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    setAntigravityPage(Math.min(antigravityTotalPages, antigravityCurrentPage + 1))
-                  }
-                  disabled={antigravityCurrentPage >= antigravityTotalPages}
-                >
-                  {t('auth_files.pagination_next')}
-                </Button>
-              </div>
-            )}
           </>
         )}
       </Card>
@@ -2049,18 +1940,9 @@ export function QuotaPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => loadCodexQuota(codexPageItems, 'page')}
-              disabled={disableControls || codexLoading || codexPageItems.length === 0}
-              loading={codexLoading && codexLoadingScope === 'page'}
-            >
-              {t('codex_quota.refresh_button')}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => loadCodexQuota(codexFiles, 'all')}
+              onClick={() => loadCodexQuota(codexFiles)}
               disabled={disableControls || codexLoading || codexFiles.length === 0}
-              loading={codexLoading && codexLoadingScope === 'all'}
+              loading={codexLoading}
             >
               {t('codex_quota.fetch_all')}
             </Button>
@@ -2073,57 +1955,13 @@ export function QuotaPage() {
           <>
             <div className={styles.codexControls}>
               <div className={styles.codexControl}>
-                <label>{t('auth_files.page_size_label')}</label>
-                <select
-                  className={styles.pageSizeSelect}
-                  value={codexPageSize}
-                  onChange={(e) => {
-                    setCodexPageSize(Number(e.target.value) || 6);
-                    setCodexPage(1);
-                  }}
-                >
-                  <option value={6}>6</option>
-                  <option value={9}>9</option>
-                  <option value={12}>12</option>
-                  <option value={18}>18</option>
-                  <option value={24}>24</option>
-                </select>
-              </div>
-              <div className={styles.codexControl}>
                 <label>{t('common.info')}</label>
                 <div className={styles.statsInfo}>
                   {codexFiles.length} {t('auth_files.files_count')}
                 </div>
               </div>
             </div>
-            <div className={styles.codexGrid}>{codexPageItems.map(renderCodexCard)}</div>
-            {codexFiles.length > codexPageSize && (
-              <div className={styles.pagination}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setCodexPage(Math.max(1, codexCurrentPage - 1))}
-                  disabled={codexCurrentPage <= 1}
-                >
-                  {t('auth_files.pagination_prev')}
-                </Button>
-                <div className={styles.pageInfo}>
-                  {t('auth_files.pagination_info', {
-                    current: codexCurrentPage,
-                    total: codexTotalPages,
-                    count: codexFiles.length
-                  })}
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setCodexPage(Math.min(codexTotalPages, codexCurrentPage + 1))}
-                  disabled={codexCurrentPage >= codexTotalPages}
-                >
-                  {t('auth_files.pagination_next')}
-                </Button>
-              </div>
-            )}
+            <div className={styles.codexGrid}>{codexFiles.map(renderCodexCard)}</div>
           </>
         )}
       </Card>
@@ -2135,18 +1973,9 @@ export function QuotaPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => loadGeminiCliQuota(geminiCliPageItems, 'page')}
-              disabled={disableControls || geminiCliLoading || geminiCliPageItems.length === 0}
-              loading={geminiCliLoading && geminiCliLoadingScope === 'page'}
-            >
-              {t('gemini_cli_quota.refresh_button')}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => loadGeminiCliQuota(geminiCliFiles, 'all')}
+              onClick={() => loadGeminiCliQuota(geminiCliFiles)}
               disabled={disableControls || geminiCliLoading || geminiCliFiles.length === 0}
-              loading={geminiCliLoading && geminiCliLoadingScope === 'all'}
+              loading={geminiCliLoading}
             >
               {t('gemini_cli_quota.fetch_all')}
             </Button>
@@ -2162,59 +1991,13 @@ export function QuotaPage() {
           <>
             <div className={styles.geminiCliControls}>
               <div className={styles.geminiCliControl}>
-                <label>{t('auth_files.page_size_label')}</label>
-                <select
-                  className={styles.pageSizeSelect}
-                  value={geminiCliPageSize}
-                  onChange={(e) => {
-                    setGeminiCliPageSize(Number(e.target.value) || 6);
-                    setGeminiCliPage(1);
-                  }}
-                >
-                  <option value={6}>6</option>
-                  <option value={9}>9</option>
-                  <option value={12}>12</option>
-                  <option value={18}>18</option>
-                  <option value={24}>24</option>
-                </select>
-              </div>
-              <div className={styles.geminiCliControl}>
                 <label>{t('common.info')}</label>
                 <div className={styles.statsInfo}>
                   {geminiCliFiles.length} {t('auth_files.files_count')}
                 </div>
               </div>
             </div>
-            <div className={styles.geminiCliGrid}>{geminiCliPageItems.map(renderGeminiCliCard)}</div>
-            {geminiCliFiles.length > geminiCliPageSize && (
-              <div className={styles.pagination}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setGeminiCliPage(Math.max(1, geminiCliCurrentPage - 1))}
-                  disabled={geminiCliCurrentPage <= 1}
-                >
-                  {t('auth_files.pagination_prev')}
-                </Button>
-                <div className={styles.pageInfo}>
-                  {t('auth_files.pagination_info', {
-                    current: geminiCliCurrentPage,
-                    total: geminiCliTotalPages,
-                    count: geminiCliFiles.length
-                  })}
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    setGeminiCliPage(Math.min(geminiCliTotalPages, geminiCliCurrentPage + 1))
-                  }
-                  disabled={geminiCliCurrentPage >= geminiCliTotalPages}
-                >
-                  {t('auth_files.pagination_next')}
-                </Button>
-              </div>
-            )}
+            <div className={styles.geminiCliGrid}>{geminiCliFiles.map(renderGeminiCliCard)}</div>
           </>
         )}
       </Card>
@@ -2225,18 +2008,9 @@ export function QuotaPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => loadClaudeCodeQuota(claudeCodePageItems, 'page', true)}
-              disabled={disableControls || claudeCodeLoading || claudeCodePageItems.length === 0}
-              loading={claudeCodeLoading && claudeCodeLoadingScope === 'page'}
-            >
-              {t('claude_code_quota.refresh_button')}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => loadClaudeCodeQuota(claudeCodeFiles, 'all', true)}
+              onClick={() => loadClaudeCodeQuota(claudeCodeFiles, true)}
               disabled={disableControls || claudeCodeLoading || claudeCodeFiles.length === 0}
-              loading={claudeCodeLoading && claudeCodeLoadingScope === 'all'}
+              loading={claudeCodeLoading}
             >
               {t('claude_code_quota.fetch_all')}
             </Button>
@@ -2252,59 +2026,13 @@ export function QuotaPage() {
           <>
             <div className={styles.antigravityControls}>
               <div className={styles.antigravityControl}>
-                <label>{t('auth_files.page_size_label')}</label>
-                <select
-                  className={styles.pageSizeSelect}
-                  value={claudeCodePageSize}
-                  onChange={(e) => {
-                    setClaudeCodePageSize(Number(e.target.value) || 6);
-                    setClaudeCodePage(1);
-                  }}
-                >
-                  <option value={6}>6</option>
-                  <option value={9}>9</option>
-                  <option value={12}>12</option>
-                  <option value={18}>18</option>
-                  <option value={24}>24</option>
-                </select>
-              </div>
-              <div className={styles.antigravityControl}>
                 <label>{t('common.info')}</label>
                 <div className={styles.statsInfo}>
                   {claudeCodeFiles.length} {t('auth_files.files_count')}
                 </div>
               </div>
             </div>
-            <div className={styles.antigravityGrid}>{claudeCodePageItems.map(renderClaudeCodeCard)}</div>
-            {claudeCodeFiles.length > claudeCodePageSize && (
-              <div className={styles.pagination}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setClaudeCodePage(Math.max(1, claudeCodeCurrentPage - 1))}
-                  disabled={claudeCodeCurrentPage <= 1}
-                >
-                  {t('auth_files.pagination_prev')}
-                </Button>
-                <div className={styles.pageInfo}>
-                  {t('auth_files.pagination_info', {
-                    current: claudeCodeCurrentPage,
-                    total: claudeCodeTotalPages,
-                    count: claudeCodeFiles.length
-                  })}
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    setClaudeCodePage(Math.min(claudeCodeTotalPages, claudeCodeCurrentPage + 1))
-                  }
-                  disabled={claudeCodeCurrentPage >= claudeCodeTotalPages}
-                >
-                  {t('auth_files.pagination_next')}
-                </Button>
-              </div>
-            )}
+            <div className={styles.antigravityGrid}>{claudeCodeFiles.map(renderClaudeCodeCard)}</div>
           </>
         )}
       </Card>

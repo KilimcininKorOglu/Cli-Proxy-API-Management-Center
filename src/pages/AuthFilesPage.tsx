@@ -152,8 +152,6 @@ export function AuthFilesPage() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | string>('all');
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(9);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deletingAll, setDeletingAll] = useState(false);
@@ -330,12 +328,6 @@ export function AuthFilesPage() {
       return matchType && matchSearch;
     });
   }, [files, filter, search]);
-
-  // 分页计算
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const start = (currentPage - 1) * pageSize;
-  const pageItems = filtered.slice(start, start + pageSize);
 
   // 统计信息
   const totalSize = useMemo(() => files.reduce((sum, item) => sum + (item.size || 0), 0), [files]);
@@ -632,10 +624,7 @@ export function AuthFilesPage() {
               color: isActive ? activeTextColor : color.text,
               borderColor: color.text
             }}
-            onClick={() => {
-              setFilter(type);
-              setPage(1);
-            }}
+            onClick={() => setFilter(type)}
           >
             {getTypeLabel(type)}
           </button>
@@ -846,34 +835,14 @@ export function AuthFilesPage() {
               <label>{t('auth_files.search_label')}</label>
               <Input
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('auth_files.search_placeholder')}
               />
             </div>
             <div className={styles.filterItem}>
-              <label>{t('auth_files.page_size_label')}</label>
-              <select
-                className={styles.pageSizeSelect}
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value) || 9);
-                  setPage(1);
-                }}
-              >
-                <option value={6}>6</option>
-                <option value={9}>9</option>
-                <option value={12}>12</option>
-                <option value={18}>18</option>
-                <option value={24}>24</option>
-              </select>
-            </div>
-            <div className={styles.filterItem}>
               <label>{t('common.info')}</label>
               <div className={styles.statsInfo}>
-                {files.length} {t('auth_files.files_count')} · {formatFileSize(totalSize)}
+                {filtered.length} / {files.length} {t('auth_files.files_count')} · {formatFileSize(totalSize)}
               </div>
             </div>
           </div>
@@ -882,40 +851,11 @@ export function AuthFilesPage() {
         {/* 卡片网格 */}
         {loading ? (
           <div className={styles.hint}>{t('common.loading')}</div>
-        ) : pageItems.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <EmptyState title={t('auth_files.search_empty_title')} description={t('auth_files.search_empty_desc')} />
         ) : (
           <div className={styles.fileGrid}>
-            {pageItems.map(renderFileCard)}
-          </div>
-        )}
-
-        {/* 分页 */}
-        {!loading && filtered.length > pageSize && (
-          <div className={styles.pagination}>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage <= 1}
-            >
-              {t('auth_files.pagination_prev')}
-            </Button>
-            <div className={styles.pageInfo}>
-              {t('auth_files.pagination_info', {
-                current: currentPage,
-                total: totalPages,
-                count: filtered.length
-              })}
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage >= totalPages}
-            >
-              {t('auth_files.pagination_next')}
-            </Button>
+            {filtered.map(renderFileCard)}
           </div>
         )}
       </Card>
