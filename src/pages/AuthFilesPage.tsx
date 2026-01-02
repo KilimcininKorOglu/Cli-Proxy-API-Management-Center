@@ -267,13 +267,14 @@ export function AuthFilesPage() {
 
   // 提取所有存在的类型
   const existingTypes = useMemo(() => {
-    const types = new Set<string>(['all']);
+    const types = new Set<string>();
     files.forEach((file) => {
       if (file.type) {
         types.add(file.type);
       }
     });
-    return Array.from(types);
+    const sorted = Array.from(types).sort((a, b) => a.localeCompare(b));
+    return ['all', ...sorted];
   }, [files]);
 
 
